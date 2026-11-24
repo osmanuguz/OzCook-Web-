@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --ozcook-red: #B71C1C;
+    --ozcook-red-dark: #7F0000;
+    --ozcook-bg-light: #FDF6F6;
+    --ozcook-bg-dark: #140B0B;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--ozcook-bg-light);
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  .dark body {
+    background-color: var(--ozcook-bg-dark);
+    color: #F5F5F5;
+  }
+}
+
+.ozcook-bugulu-bg {
+  background: radial-gradient(circle at 15% 15%, rgba(183, 28, 28, 0.08), transparent 45%),
+              radial-gradient(circle at 85% 80%, rgba(183, 28, 28, 0.06), transparent 45%);
+}
+
+.dark .ozcook-bugulu-bg {
+  background: radial-gradient(circle at 15% 15%, rgba(183, 28, 28, 0.18), transparent 45%),
+              radial-gradient(circle at 85% 80%, rgba(127, 0, 0, 0.15), transparent 45%);
+}
