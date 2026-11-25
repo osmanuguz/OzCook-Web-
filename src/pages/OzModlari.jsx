@@ -9,6 +9,7 @@ import {
   Moon,
   Target,
 } from 'lucide-react';
+import KaloriOneri from './KaloriOneri';
 
 function IlerlemeCubugu({ deger, hedef }) {
   const yuzde = Math.min(100, Math.round((deger / Math.max(1, hedef)) * 100));
@@ -33,7 +34,7 @@ export default function OzModlari({
   onUykuGuncelle,
   onHedefGuncelle,
 }) {
-  const [seciliMod, setSeciliMod] = useState('OzDay');
+  const [seciliMod, setSeciliMod] = useState('Kalori & OzDay');
   const [manuelKalori, setManuelKalori] = useState('');
   const [hedefAcik, setHedefAcik] = useState(false);
   const [hedefForm, setHedefForm] = useState({
@@ -42,7 +43,7 @@ export default function OzModlari({
     adimHedefi: saglikVerisi.adimHedefi,
   });
 
-  const modlar = ['OzDay', 'OzFit', 'OzHealth'];
+  const modlar = ['Kalori & OzDay', 'OzFit', 'OzHealth'];
 
   const kaloriGonder = (e) => {
     e.preventDefault();
@@ -69,7 +70,7 @@ export default function OzModlari({
               key={mod}
               type="button"
               onClick={() => setSeciliMod(mod)}
-              className={`py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+              className={`py-2.5 px-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                 seciliMod === mod
                   ? 'bg-[#B71C1C] text-white shadow-sm'
                   : 'text-zinc-600 dark:text-zinc-300 hover:bg-red-900/5'
@@ -144,80 +145,87 @@ export default function OzModlari({
         </form>
       )}
 
-      {/* OZDAY */}
-      {seciliMod === 'OzDay' && (
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/10 dark:border-red-500/20 p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#B71C1C] dark:text-red-400">
-                Günlük Kalori
-              </span>
-              <Flame className="w-4 h-4 text-[#B71C1C] dark:text-red-400" />
-            </div>
-            <p className="text-2xl font-bold">
-              {saglikVerisi.alinanKalori}{' '}
-              <span className="text-sm font-normal text-zinc-500">
-                / {saglikVerisi.kaloriHedefi} kcal
-              </span>
-            </p>
-            <IlerlemeCubugu
-              deger={saglikVerisi.alinanKalori}
-              hedef={saglikVerisi.kaloriHedefi}
-            />
-            <form onSubmit={kaloriGonder} className="flex gap-2 pt-1">
-              <input
-                type="number"
-                min="1"
-                placeholder="Örn: 350 kcal"
-                value={manuelKalori}
-                onChange={(e) => setManuelKalori(e.target.value)}
-                className="flex-1 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs outline-none focus:ring-2 focus:ring-[#B71C1C]"
+      {/* KALORİ & OZDAY */}
+      {seciliMod === 'Kalori & OzDay' && (
+        <div className="space-y-5">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/10 dark:border-red-500/20 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#B71C1C] dark:text-red-400">
+                  Günlük Kalori
+                </span>
+                <Flame className="w-4 h-4 text-[#B71C1C] dark:text-red-400" />
+              </div>
+              <p className="text-2xl font-bold">
+                {saglikVerisi.alinanKalori}{' '}
+                <span className="text-sm font-normal text-zinc-500">
+                  / {saglikVerisi.kaloriHedefi} kcal
+                </span>
+              </p>
+              <IlerlemeCubugu
+                deger={saglikVerisi.alinanKalori}
+                hedef={saglikVerisi.kaloriHedefi}
               />
-              <button
-                type="submit"
-                className="px-3 py-1.5 rounded-xl bg-[#B71C1C] text-white text-xs font-semibold cursor-pointer"
-              >
-                + Ekle
-              </button>
-            </form>
+              <form onSubmit={kaloriGonder} className="flex gap-2 pt-1">
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="Örn: 350 kcal"
+                  value={manuelKalori}
+                  onChange={(e) => setManuelKalori(e.target.value)}
+                  className="flex-1 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs outline-none focus:ring-2 focus:ring-[#B71C1C]"
+                />
+                <button
+                  type="submit"
+                  className="px-3 py-1.5 rounded-xl bg-[#B71C1C] text-white text-xs font-semibold cursor-pointer"
+                >
+                  + Ekle
+                </button>
+              </form>
+            </div>
+
+            <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/10 dark:border-red-500/20 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#B71C1C] dark:text-red-400">
+                  Su Takibi
+                </span>
+                <Droplets className="w-4 h-4 text-[#B71C1C] dark:text-red-400" />
+              </div>
+              <p className="text-2xl font-bold">
+                {saglikVerisi.suBardak}{' '}
+                <span className="text-sm font-normal text-zinc-500">
+                  / {saglikVerisi.suHedefi} bardak
+                </span>
+              </p>
+              <IlerlemeCubugu
+                deger={saglikVerisi.suBardak}
+                hedef={saglikVerisi.suHedefi}
+              />
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => onSuEkle(-1)}
+                  className="inline-flex items-center justify-center p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-red-900/10 cursor-pointer"
+                  aria-label="Su azalt"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSuEkle(1)}
+                  className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-[#B71C1C] text-white text-xs font-semibold cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+1 Bardak Ekle</span>
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/10 dark:border-red-500/20 p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#B71C1C] dark:text-red-400">
-                Su Takibi
-              </span>
-              <Droplets className="w-4 h-4 text-[#B71C1C] dark:text-red-400" />
-            </div>
-            <p className="text-2xl font-bold">
-              {saglikVerisi.suBardak}{' '}
-              <span className="text-sm font-normal text-zinc-500">
-                / {saglikVerisi.suHedefi} bardak
-              </span>
-            </p>
-            <IlerlemeCubugu
-              deger={saglikVerisi.suBardak}
-              hedef={saglikVerisi.suHedefi}
-            />
-            <div className="flex items-center gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => onSuEkle(-1)}
-                className="inline-flex items-center justify-center p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-red-900/10 cursor-pointer"
-                aria-label="Su azalt"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onSuEkle(1)}
-                className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-[#B71C1C] text-white text-xs font-semibold cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+1 Bardak Ekle</span>
-              </button>
-            </div>
-          </div>
+          <KaloriOneri
+            saglikVerisi={saglikVerisi}
+            onKaloriEkle={onKaloriEkle}
+          />
         </div>
       )}
 

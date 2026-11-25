@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Home, SlidersHorizontal, Settings, ChefHat } from 'lucide-react';
+import { Home, SlidersHorizontal, Settings, ChefHat, Refrigerator } from 'lucide-react';
 import AnaSayfa from './pages/AnaSayfa';
+import Dolap from './pages/Dolap';
 import OzModlari from './pages/OzModlari';
 import Ayarlar from './pages/Ayarlar';
 import { saglikServisi } from './services/saglikServisi';
@@ -28,6 +29,7 @@ export default function App() {
 
   const basliklar = {
     ana: 'Ana Sayfa',
+    dolap: 'Dolapta Ne Var?',
     modlar: 'Oz Modları',
     ayarlar: 'Ayarlar',
   };
@@ -67,6 +69,8 @@ export default function App() {
           />
         )}
 
+        {aktifSekme === 'dolap' && <Dolap />}
+
         {aktifSekme === 'modlar' && (
           <OzModlari
             saglikVerisi={saglikVerisi}
@@ -105,7 +109,7 @@ export default function App() {
       </main>
 
       <nav className="sticky bottom-0 z-20 bg-[#B71C1C] dark:bg-[#5E0D0D] text-white border-t border-white/10 dark:border-red-500/20">
-        <div className="max-w-5xl mx-auto px-4 h-16 grid grid-cols-3">
+        <div className="max-w-5xl mx-auto px-4 h-16 grid grid-cols-4">
           <button
             type="button"
             onClick={() => setAktifSekme('ana')}
@@ -115,6 +119,17 @@ export default function App() {
           >
             <Home className="w-5 h-5" />
             <span>Ana Sayfa</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setAktifSekme('dolap')}
+            className={`flex flex-col items-center justify-center gap-1 text-xs cursor-pointer ${
+              aktifSekme === 'dolap' ? 'text-white font-semibold' : 'text-white/70'
+            }`}
+          >
+            <Refrigerator className="w-5 h-5" />
+            <span>Dolap</span>
           </button>
 
           <button
