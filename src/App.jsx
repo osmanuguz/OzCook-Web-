@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Home, SlidersHorizontal, Settings, ChefHat } from 'lucide-react';
+import AnaSayfa from './pages/AnaSayfa';
+import OzModlari from './pages/OzModlari';
+import Ayarlar from './pages/Ayarlar';
+import { saglikServisi } from './services/saglikServisi';
 
 const TEMA_ANAHTARI = 'ozcook_koyu_tema';
 
 export default function App() {
   const [aktifSekme, setAktifSekme] = useState('ana');
+  const [saglikVerisi, setSaglikVerisi] = useState(() => saglikServisi.getir());
   const [koyuTema, setKoyuTema] = useState(() => {
     const kayitli = localStorage.getItem(TEMA_ANAHTARI);
     if (kayitli !== null) return kayitli === 'true';
@@ -29,7 +34,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col ozcook-bugulu-bg text-zinc-900 dark:text-zinc-100">
-      {/* Üst Bar */}
       <header className="sticky top-0 z-20 bg-[#B71C1C] dark:bg-[#5E0D0D] text-white shadow-md">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -53,57 +57,32 @@ export default function App() {
         </div>
       </header>
 
-      {/* Orta Alan */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 pb-24">
         {aktifSekme === 'ana' && (
-          <div className="rounded-2xl bg-white/85 dark:bg-zinc-900/85 border border-red-900/10 dark:border-red-500/20 p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-1">Ana Sayfa</h2>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Tarif ve besin akışı için ilk adımı kurduk.
-            </p>
-          </div>
+          <AnaSayfa
+            saglikVerisi={saglikVerisi}
+            onModlaraGit={() => setAktifSekme('modlar')}
+          />
         )}
 
         {aktifSekme === 'modlar' && (
-          <div className="rounded-2xl bg-white/85 dark:bg-zinc-900/85 border border-red-900/10 dark:border-red-500/20 p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-1">Oz Modları</h2>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              OzDay, OzFit ve OzHealth modları burada yer alacak.
-            </p>
-          </div>
+          <OzModlari
+            saglikVerisi={saglikVerisi}
+            onSuEkle={() => setSaglikVerisi((prev) => saglikServisi.suEkle(prev))}
+            onAdimEkle={(miktar) => setSaglikVerisi((prev) => saglikServisi.adimEkle(prev, miktar))}
+          />
         )}
 
         {aktifSekme === 'ayarlar' && (
-          <div className="rounded-2xl bg-white/85 dark:bg-zinc-900/85 border border-red-900/10 dark:border-red-500/20 p-6 shadow-sm space-y-4">
-            <h2 className="text-lg font-semibold">Ayarlar</h2>
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="font-medium text-sm">Koyu Tema</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Karanlık görünümü anında aç veya kapat
-                </p>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={koyuTema}
-                onClick={() => setKoyuTema((prev) => !prev)}
-                className={`w-12 h-7 rounded-full transition-colors p-1 cursor-pointer ${
-                  koyuTema ? 'bg-[#B71C1C]' : 'bg-zinc-300 dark:bg-zinc-700'
-                }`}
-              >
-                <span
-                  className={`block w-5 h-5 rounded-full bg-white transition-transform ${
-                    koyuTema ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
+          <Ayarlar
+            koyuTema={koyuTema}
+            onKoyuTemaDegistir={setKoyuTema}
+            saglikVerisi={saglikVerisi}
+            onSenkronize={() => setSaglikVerisi((prev) => saglikServisi.senkronizeEt(prev))}
+          />
         )}
       </main>
 
-      {/* Alt Navigasyon */}
       <nav className="sticky bottom-0 z-20 bg-[#B71C1C] dark:bg-[#5E0D0D] text-white border-t border-white/10 dark:border-red-500/20">
         <div className="max-w-5xl mx-auto px-4 h-16 grid grid-cols-3">
           <button
