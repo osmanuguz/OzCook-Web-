@@ -11,6 +11,13 @@ const VARSAYILAN_VERI = {
   uykuSaat: 7.5,
   googleBagli: false,
   sonSenkron: null,
+  profil: {
+    ad: 'Ozcook Kullanıcısı',
+    boy: 175,
+    kilo: 70,
+    yas: 20,
+    hedef: 'Formu Korumak',
+  },
 };
 
 function simdiSaat() {
@@ -25,7 +32,15 @@ export const saglikServisi = {
     try {
       const kayit = localStorage.getItem(DEPO_ANAHTARI);
       if (!kayit) return { ...VARSAYILAN_VERI };
-      return { ...VARSAYILAN_VERI, ...JSON.parse(kayit) };
+      const parsed = JSON.parse(kayit);
+      return {
+        ...VARSAYILAN_VERI,
+        ...parsed,
+        profil: {
+          ...VARSAYILAN_VERI.profil,
+          ...(parsed.profil || {}),
+        },
+      };
     } catch {
       return { ...VARSAYILAN_VERI };
     }
@@ -78,6 +93,31 @@ export const saglikServisi = {
       kaloriHedefi: Math.max(500, Number(yeniHedefler.kaloriHedefi) || mevcut.kaloriHedefi),
       suHedefi: Math.max(1, Number(yeniHedefler.suHedefi) || mevcut.suHedefi),
       adimHedefi: Math.max(1000, Number(yeniHedefler.adimHedefi) || mevcut.adimHedefi),
+      sonSenkron: simdiSaat(),
+    });
+  },
+
+  profilGuncelle(mevcut, yeniProfil) {
+    return this.kaydet({
+      ...mevcut,
+      profil: {
+        ad: (yeniProfil.ad || '').trim() || 'Ozcook Kullanıcısı',
+        boy: Math.min(250, Math.max(100, Number(yeniProfil.boy) || 175)),
+        kilo: Math.min(300, Math.max(30, Number(yeniProfil.kilo) || 70)),
+        yas: Math.min(120, Math.max(10, Number(yeniProfil.yas) || 20)),
+        hedef: yeniProfil.hedef || 'Formu Korumak',
+      },
+      sonSenkron: simdiSaat(),
+    });
+  },
+
+  gunuSifirla(mevcut) {
+    return this.kaydet({
+      ...mevcut,
+      adim: 0,
+      suBardak: 0,
+      alinanKalori: 0,
+      yakilanKalori: 0,
       sonSenkron: simdiSaat(),
     });
   },

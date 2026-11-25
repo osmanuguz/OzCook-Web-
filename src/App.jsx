@@ -42,7 +42,9 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-base font-bold leading-tight">{basliklar[aktifSekme]}</h1>
-              <p className="text-[11px] text-white/85">Ozcook • Tarif, Kalori & Akıllı Mutfak</p>
+              <p className="text-[11px] text-white/85">
+                {saglikVerisi.profil?.ad || 'Ozcook'} • Tarif, Kalori & Akıllı Mutfak
+              </p>
             </div>
           </div>
 
@@ -92,6 +94,12 @@ export default function App() {
             onKoyuTemaDegistir={setKoyuTema}
             saglikVerisi={saglikVerisi}
             onSenkronize={() => setSaglikVerisi((prev) => saglikServisi.senkronizeEt(prev))}
+            onProfilGuncelle={(profil) =>
+              setSaglikVerisi((prev) => saglikServisi.profilGuncelle(prev, profil))
+            }
+            onGunuSifirla={() =>
+              setSaglikVerisi((prev) => saglikServisi.gunuSifirla(prev))
+            }
           />
         )}
       </main>
