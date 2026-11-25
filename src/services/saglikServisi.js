@@ -13,6 +13,13 @@ const VARSAYILAN_VERI = {
   sonSenkron: null,
 };
 
+function simdiSaat() {
+  return new Date().toLocaleTimeString('tr-TR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 export const saglikServisi = {
   getir() {
     try {
@@ -29,37 +36,56 @@ export const saglikServisi = {
     return yeniVeri;
   },
 
-  suEkle(mevcut) {
+  suEkle(mevcut, miktar = 1) {
     return this.kaydet({
       ...mevcut,
-      suBardak: mevcut.suBardak + 1,
-      sonSenkron: new Date().toLocaleTimeString('tr-TR', {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
+      suBardak: Math.max(0, mevcut.suBardak + miktar),
+      sonSenkron: simdiSaat(),
     });
   },
 
   adimEkle(mevcut, miktar = 1000) {
-    const yeniAdim = mevcut.adim + miktar;
+    const yeniAdim = Math.max(0, mevcut.adim + miktar);
     return this.kaydet({
       ...mevcut,
       adim: yeniAdim,
-      yakilanKalori: mevcut.yakilanKalori + Math.round(miktar * 0.04),
-      sonSenkron: new Date().toLocaleTimeString('tr-TR', {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
+      yakilanKalori: Math.max(0, mevcut.yakilanKalori + Math.round(miktar * 0.04)),
+      sonSenkron: simdiSaat(),
+    });
+  },
+
+  kaloriEkle(mevcut, miktar) {
+    const sayi = Number(miktar) || 0;
+    return this.kaydet({
+      ...mevcut,
+      alinanKalori: Math.max(0, mevcut.alinanKalori + sayi),
+      sonSenkron: simdiSaat(),
+    });
+  },
+
+  uykuGuncelle(mevcut, yeniSaat) {
+    const sayi = Math.min(24, Math.max(0, Number(yeniSaat) || 0));
+    return this.kaydet({
+      ...mevcut,
+      uykuSaat: Number(sayi.toFixed(1)),
+      sonSenkron: simdiSaat(),
+    });
+  },
+
+  hedefleriGuncelle(mevcut, yeniHedefler) {
+    return this.kaydet({
+      ...mevcut,
+      kaloriHedefi: Math.max(500, Number(yeniHedefler.kaloriHedefi) || mevcut.kaloriHedefi),
+      suHedefi: Math.max(1, Number(yeniHedefler.suHedefi) || mevcut.suHedefi),
+      adimHedefi: Math.max(1000, Number(yeniHedefler.adimHedefi) || mevcut.adimHedefi),
+      sonSenkron: simdiSaat(),
     });
   },
 
   senkronizeEt(mevcut) {
     return this.kaydet({
       ...mevcut,
-      sonSenkron: new Date().toLocaleTimeString('tr-TR', {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
+      sonSenkron: simdiSaat(),
     });
   },
 };

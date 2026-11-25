@@ -68,8 +68,21 @@ export default function App() {
         {aktifSekme === 'modlar' && (
           <OzModlari
             saglikVerisi={saglikVerisi}
-            onSuEkle={() => setSaglikVerisi((prev) => saglikServisi.suEkle(prev))}
-            onAdimEkle={(miktar) => setSaglikVerisi((prev) => saglikServisi.adimEkle(prev, miktar))}
+            onSuEkle={(miktar = 1) =>
+              setSaglikVerisi((prev) => saglikServisi.suEkle(prev, miktar))
+            }
+            onAdimEkle={(miktar) =>
+              setSaglikVerisi((prev) => saglikServisi.adimEkle(prev, miktar))
+            }
+            onKaloriEkle={(miktar) =>
+              setSaglikVerisi((prev) => saglikServisi.kaloriEkle(prev, miktar))
+            }
+            onUykuGuncelle={(saat) =>
+              setSaglikVerisi((prev) => saglikServisi.uykuGuncelle(prev, saat))
+            }
+            onHedefGuncelle={(hedefler) =>
+              setSaglikVerisi((prev) => saglikServisi.hedefleriGuncelle(prev, hedefler))
+            }
           />
         )}
 
