@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import KaloriOneri from './KaloriOneri';
 import KykYurtModu from './KykYurtModu';
+import OzHealthTarifler from './OzHealthTarifler';
 
 function IlerlemeCubugu({ deger, hedef }) {
   const yuzde = Math.min(100, Math.round((deger / Math.max(1, hedef)) * 100));
@@ -274,39 +275,47 @@ export default function OzModlari({
 
       {/* OZHEALTH */}
       {seciliMod === 'OzHealth' && (
-        <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/10 dark:border-red-500/20 p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <HeartPulse className="w-5 h-5 text-[#B71C1C] dark:text-red-400" />
-              <h3 className="font-semibold">OzHealth Uyku & Denge</h3>
+        <div className="space-y-5">
+          <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/10 dark:border-red-500/20 p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <HeartPulse className="w-5 h-5 text-[#B71C1C] dark:text-red-400" />
+                <h3 className="font-semibold">OzHealth Uyku & Denge</h3>
+              </div>
+              <Moon className="w-4 h-4 text-[#B71C1C] dark:text-red-400" />
             </div>
-            <Moon className="w-4 h-4 text-[#B71C1C] dark:text-red-400" />
+
+            <div className="flex items-center justify-between">
+              <p className="text-2xl font-bold">
+                {saglikVerisi.uykuSaat}{' '}
+                <span className="text-sm font-normal text-zinc-500">/ 8 saat</span>
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => onUykuGuncelle(saglikVerisi.uykuSaat - 0.5)}
+                  className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold cursor-pointer"
+                >
+                  -0.5 sa
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onUykuGuncelle(saglikVerisi.uykuSaat + 0.5)}
+                  className="px-3 py-1.5 rounded-xl bg-[#B71C1C] text-white text-xs font-semibold cursor-pointer"
+                >
+                  +0.5 sa
+                </button>
+              </div>
+            </div>
+
+            <IlerlemeCubugu deger={saglikVerisi.uykuSaat} hedef={8} />
           </div>
 
-          <div className="flex items-center justify-between">
-            <p className="text-2xl font-bold">
-              {saglikVerisi.uykuSaat}{' '}
-              <span className="text-sm font-normal text-zinc-500">/ 8 saat</span>
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => onUykuGuncelle(saglikVerisi.uykuSaat - 0.5)}
-                className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold cursor-pointer"
-              >
-                -0.5 sa
-              </button>
-              <button
-                type="button"
-                onClick={() => onUykuGuncelle(saglikVerisi.uykuSaat + 0.5)}
-                className="px-3 py-1.5 rounded-xl bg-[#B71C1C] text-white text-xs font-semibold cursor-pointer"
-              >
-                +0.5 sa
-              </button>
-            </div>
-          </div>
-
-          <IlerlemeCubugu deger={saglikVerisi.uykuSaat} hedef={8} />
+          <OzHealthTarifler
+            kaydedilenler={kaydedilenler}
+            onFavoriDegistir={onFavoriDegistir}
+            onKaloriEkle={onKaloriEkle}
+          />
         </div>
       )}
 
