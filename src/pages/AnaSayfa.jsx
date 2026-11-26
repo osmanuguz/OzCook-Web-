@@ -1,37 +1,83 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Search,
   Flame,
   Clock,
-  Heart,
+  Bookmark,
   RefreshCw,
   X,
   Utensils,
+  Sparkles,
+  PlusCircle,
+  Check,
 } from 'lucide-react';
 import { tarifServisi } from '../services/tarifServisi';
 
-const FAVORILER_ANAHTARI = 'ozcook_favori_tarifler_v1';
-const KATEGORILER = ['Tümü', 'Kahvaltılık', 'Salata', 'Tatlı', 'Favoriler'];
+const KATEGORILER = ['Tümü', 'Kahvaltılık', 'Salata', 'Tatlı', 'Kaydedilenler'];
 
-export default function AnaSayfa({ saglikVerisi, onModlaraGit }) {
+function gununSeedDegeri() {
+  const bugun = new Date();
+  return (
+    bugun.getFullYear() * 10000 +
+    (bugun.getMonth() + 1) * 100 +
+    bugun.getDate()
+  );
+}
+
+function gununMenusunuSec(tarifler) {
+  if (!tarifler.length) return [];
+
+  const seed = gununSeedDegeri();
+  const secilenler = [];
+  const kullanilanIdler = new Set();
+
+  const havuzdanSec = (etiket, adaylar) => {
+    const uygun = adaylar.filter((t) => !kullanilanIdler.has(t.id));
+    if (!uygun.length) return;
+    const index = (seed + secilenler.length * 7) % uygun.length;
+    const secilen = uygun[index];
+    kullanilanIdler.add(secilen.id);
+    secilenler.push({ ogun: etiket, tarif: secilen });
+  };
+
+  const kahvaltiAdaylari = tarifler.filter((t) =>
+    tarifServisi.kategoriEslestiMi(t, 'Kahvaltılık')
+  );
+  const tatliSalataAdaylari = tarifler.filter(
+    (t) =>
+      tarifServisi.kategoriEslestiMi(t, 'Salata') ||
+      tarifServisi.kategoriEslestiMi(t, 'Tatlı')
+  );
+  const anaYemekAdaylari = tarifler.filter(
+    (t) =>
+      !tarifServisi.kategoriEslestiMi(t, 'Kahvaltılık') &&
+      !tarifServisi.kategoriEslestiMi(t, 'Tatlı')
+  );
+
+  havuzdanSec('Güne Başlangıç', kahvaltiAdaylari.length ? kahvaltiAdaylari : tarifler);
+  havuzdanSec('Ana Öğün', anaYemekAdaylari.length ? anaYemekAdaylari : tarifler);
+  havuzdanSec(
+    'Yanında / Tatlı',
+    tatliSalataAdaylari.length ? tatliSalataAdaylari : tarifler
+  );
+
+  return secilenler;
+}
+
+export default function AnaSayfa({
+  saglikVerisi,
+  kaydedilenler = [],
+  onFavoriDegistir,
+  onKaloriEkle,
+  onModlaraGit,
+}) {
   const [tarifler, setTarifler] = useState([]);
   const [yukleniyor, setYukleniyor] = useState(true);
   const [hata, setHata] = useState('');
   const [arama, setArama] = useState('');
   const [seciliKategori, setSeciliKategori] = useState('Tümü');
   const [seciliTarif, setSeciliTarif] = useState(null);
-  const [favoriler, setFavoriler] = useState(() => {
-    try {
-      const kayit = localStorage.getItem(FAVORILER_ANAHTARI);
-      return kayit ? JSON.parse(kayit) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem(FAVORILER_ANAHTARI, JSON.stringify(favoriler));
-  }, [favoriler]);
+  const [eklendiId, setEklendiId] = useState(null);
 
   const tarifleriYukle = async ({ zorlaYenile = false, sorgu = '' } = {}) => {
     setYukleniyor(true);
@@ -61,27 +107,46 @@ export default function AnaSayfa({ saglikVerisi, onModlaraGit }) {
     tarifleriYukle({ sorgu: arama });
   };
 
-  const favoriDegistir = (e, id) => {
+  const kayitliMi = (id) => kaydedilenler.some((t) => t.id === id);
+
+  const kaydetButonunaBas = (e, tarif) => {
     e.stopPropagation();
-    setFavoriler((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+    onFavoriDegistir?.(tarif);
   };
 
-  const gorunenTarifler = tarifler.filter((tarif) => {
-    if (seciliKategori === 'Favoriler') {
-      return favoriler.includes(tarif.id);
-    }
-    return tarifServisi.kategoriEslestiMi(tarif, seciliKategori);
-  });
+  const bunuYedim = (tarif) => {
+    const kcal = tarif.besinDegerleri?.kalori ?? 250;
+    onKaloriEkle?.(kcal);
+    setEklendiId(tarif.id);
+    setTimeout(() => setEklendiId(null), 2000);
+  };
+
+  const gununMenusu = useMemo(() => gununMenusunuSec(tarifler), [tarifler]);
+  const gununToplamKalorisi = useMemo(
+    () =>
+      gununMenusu.reduce(
+        (toplam, item) => toplam + (item.tarif.besinDegerleri?.kalori ?? 250),
+        0
+      ),
+    [gununMenusu]
+  );
+
+  const gorunenTarifler =
+    seciliKategori === 'Kaydedilenler'
+      ? kaydedilenler
+      : tarifler.filter((tarif) =>
+          tarifServisi.kategoriEslestiMi(tarif, seciliKategori)
+        );
 
   return (
     <div className="space-y-5">
+      {/* Üst Özet Kartı */}
       <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/10 dark:border-red-500/20 p-5 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold">Ozcook Mutfak & Sağlık Özeti</h2>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-            Bugün {saglikVerisi.alinanKalori} kcal • {saglikVerisi.adim.toLocaleString('tr-TR')} adım •{' '}
+            Bugün {saglikVerisi.alinanKalori} kcal •{' '}
+            {saglikVerisi.adim.toLocaleString('tr-TR')} adım •{' '}
             {saglikVerisi.suBardak}/{saglikVerisi.suHedefi} bardak su
           </p>
         </div>
@@ -106,6 +171,84 @@ export default function AnaSayfa({ saglikVerisi, onModlaraGit }) {
         </div>
       </div>
 
+      {/* Günün Menüsü */}
+      {!yukleniyor && gununMenusu.length > 0 && !arama.trim() && (
+        <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/15 dark:border-red-500/25 p-5 shadow-sm space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-[#B71C1C]/10 dark:bg-red-500/20 text-[#B71C1C] dark:text-red-400 flex items-center justify-center">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold">Günün Menüsü</h3>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  Bugün senin için seçilen dengeli öğün önerileri
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#B71C1C]/10 dark:bg-red-500/20 text-[#B71C1C] dark:text-red-300 text-xs font-semibold">
+              <Flame className="w-3.5 h-3.5" />
+              Toplam ~{gununToplamKalorisi} kcal
+            </span>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-3">
+            {gununMenusu.map(({ ogun, tarif }) => {
+              const kayitli = kayitliMi(tarif.id);
+              return (
+                <div
+                  key={`${ogun}-${tarif.id}`}
+                  onClick={() => setSeciliTarif(tarif)}
+                  className="rounded-xl bg-zinc-50 dark:bg-zinc-800/70 border border-zinc-200/70 dark:border-zinc-700/60 overflow-hidden hover:border-[#B71C1C]/50 transition-colors cursor-pointer flex flex-col justify-between"
+                >
+                  <div>
+                    {tarif.gorselUrl ? (
+                      <img
+                        src={tarif.gorselUrl}
+                        alt={tarif.baslik}
+                        loading="lazy"
+                        className="w-full h-28 object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-28 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                        <Utensils className="w-6 h-6 text-zinc-400" />
+                      </div>
+                    )}
+                    <div className="p-3 space-y-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#B71C1C] dark:text-red-400">
+                          {ogun}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => kaydetButonunaBas(e, tarif)}
+                          aria-label="Tarifi kaydet"
+                          className="p-1 rounded-md hover:bg-red-500/10 cursor-pointer"
+                        >
+                          <Bookmark
+                            className={`w-3.5 h-3.5 ${
+                              kayitli
+                                ? 'fill-[#B71C1C] text-[#B71C1C] dark:fill-red-400 dark:text-red-400'
+                                : 'text-zinc-400'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                      <h4 className="text-xs font-bold line-clamp-1">{tarif.baslik}</h4>
+                    </div>
+                  </div>
+                  <div className="px-3 pb-2.5 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <span>{tarif.besinDegerleri?.kalori ?? 250} kcal</span>
+                    <span>{tarif.sureDk} dk</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Arama ve Kategori Filtreleri */}
       <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/10 dark:border-red-500/20 p-4 shadow-sm space-y-3">
         <form onSubmit={aramaYap} className="flex gap-2">
           <div className="relative flex-1">
@@ -137,24 +280,36 @@ export default function AnaSayfa({ saglikVerisi, onModlaraGit }) {
               key={kat}
               type="button"
               onClick={() => setSeciliKategori(kat)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors cursor-pointer ${
                 seciliKategori === kat
                   ? 'bg-[#B71C1C] text-white'
                   : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-red-900/10'
               }`}
             >
-              {kat}
+              {kat === 'Kaydedilenler' && <Bookmark className="w-3.5 h-3.5" />}
+              <span>
+                {kat === 'Kaydedilenler' ? `${kat} (${kaydedilenler.length})` : kat}
+              </span>
             </button>
           ))}
         </div>
       </div>
 
-      {yukleniyor ? (
+      {/* Tarif Listesi */}
+      {yukleniyor && seciliKategori !== 'Kaydedilenler' ? (
         <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/10 dark:border-red-500/20 p-10 text-center space-y-2">
           <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#B71C1C] dark:text-red-400" />
           <p className="text-sm font-medium">TheMealDB tarifleri yükleniyor...</p>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             İlk yüklemede tarifler önbelleğe alınıyor.
+          </p>
+        </div>
+      ) : seciliKategori === 'Kaydedilenler' && gorunenTarifler.length === 0 ? (
+        <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/10 dark:border-red-500/20 p-8 text-center space-y-2">
+          <Bookmark className="w-7 h-7 mx-auto text-zinc-400" />
+          <p className="text-sm font-medium">Henüz kaydettiğin bir tarif yok.</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Beğendiğin tariflerin üzerindeki kaydet ikonuna basarak burada toplayabilirsin.
           </p>
         </div>
       ) : hata && gorunenTarifler.length === 0 ? (
@@ -171,7 +326,7 @@ export default function AnaSayfa({ saglikVerisi, onModlaraGit }) {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {gorunenTarifler.map((tarif) => {
-            const favorideMi = favoriler.includes(tarif.id);
+            const kayitli = kayitliMi(tarif.id);
             return (
               <div
                 key={tarif.id}
@@ -199,13 +354,13 @@ export default function AnaSayfa({ saglikVerisi, onModlaraGit }) {
                       </span>
                       <button
                         type="button"
-                        onClick={(e) => favoriDegistir(e, tarif.id)}
-                        aria-label="Favoriye ekle"
+                        onClick={(e) => kaydetButonunaBas(e, tarif)}
+                        aria-label="Tarifi kaydet"
                         className="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors cursor-pointer"
                       >
-                        <Heart
+                        <Bookmark
                           className={`w-4 h-4 ${
-                            favorideMi
+                            kayitli
                               ? 'fill-[#B71C1C] text-[#B71C1C] dark:fill-red-400 dark:text-red-400'
                               : 'text-zinc-400'
                           }`}
@@ -233,6 +388,7 @@ export default function AnaSayfa({ saglikVerisi, onModlaraGit }) {
         </div>
       )}
 
+      {/* Tarif Detay Modalı */}
       {seciliTarif && (
         <div
           onClick={() => setSeciliTarif(null)}
@@ -265,6 +421,45 @@ export default function AnaSayfa({ saglikVerisi, onModlaraGit }) {
                 className="w-full h-52 object-cover rounded-xl"
               />
             )}
+
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={(e) => kaydetButonunaBas(e, seciliTarif)}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                  kayitliMi(seciliTarif.id)
+                    ? 'bg-[#B71C1C]/15 text-[#B71C1C] dark:bg-red-500/20 dark:text-red-300'
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-red-900/10'
+                }`}
+              >
+                <Bookmark
+                  className={`w-3.5 h-3.5 ${
+                    kayitliMi(seciliTarif.id) ? 'fill-current' : ''
+                  }`}
+                />
+                <span>{kayitliMi(seciliTarif.id) ? 'Kaydedildi' : 'Tarifi Kaydet'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => bunuYedim(seciliTarif)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#B71C1C] hover:bg-[#991616] text-white text-xs font-semibold transition-colors cursor-pointer"
+              >
+                {eklendiId === seciliTarif.id ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Kaloriye Eklendi</span>
+                  </>
+                ) : (
+                  <>
+                    <PlusCircle className="w-3.5 h-3.5" />
+                    <span>
+                      Bunu Yedim (+{seciliTarif.besinDegerleri?.kalori ?? 250} kcal)
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
 
             <div className="grid grid-cols-4 gap-2 text-center text-xs">
               <div className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800">

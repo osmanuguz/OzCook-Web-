@@ -5,12 +5,14 @@ import Dolap from './pages/Dolap';
 import OzModlari from './pages/OzModlari';
 import Ayarlar from './pages/Ayarlar';
 import { saglikServisi } from './services/saglikServisi';
+import { favoriServisi } from './services/favoriServisi';
 
 const TEMA_ANAHTARI = 'ozcook_koyu_tema';
 
 export default function App() {
   const [aktifSekme, setAktifSekme] = useState('ana');
   const [saglikVerisi, setSaglikVerisi] = useState(() => saglikServisi.getir());
+  const [kaydedilenler, setKaydedilenler] = useState(() => favoriServisi.getir());
   const [koyuTema, setKoyuTema] = useState(() => {
     const kayitli = localStorage.getItem(TEMA_ANAHTARI);
     if (kayitli !== null) return kayitli === 'true';
@@ -26,6 +28,10 @@ export default function App() {
     }
     localStorage.setItem(TEMA_ANAHTARI, String(koyuTema));
   }, [koyuTema]);
+
+  const favoriDegistir = (tarif) => {
+    setKaydedilenler((prev) => favoriServisi.degistir(prev, tarif));
+  };
 
   const basliklar = {
     ana: 'Ana Sayfa',
@@ -65,6 +71,11 @@ export default function App() {
         {aktifSekme === 'ana' && (
           <AnaSayfa
             saglikVerisi={saglikVerisi}
+            kaydedilenler={kaydedilenler}
+            onFavoriDegistir={favoriDegistir}
+            onKaloriEkle={(miktar) =>
+              setSaglikVerisi((prev) => saglikServisi.kaloriEkle(prev, miktar))
+            }
             onModlaraGit={() => setAktifSekme('modlar')}
           />
         )}
@@ -74,6 +85,8 @@ export default function App() {
         {aktifSekme === 'modlar' && (
           <OzModlari
             saglikVerisi={saglikVerisi}
+            kaydedilenler={kaydedilenler}
+            onFavoriDegistir={favoriDegistir}
             onSuEkle={(miktar = 1) =>
               setSaglikVerisi((prev) => saglikServisi.suEkle(prev, miktar))
             }
