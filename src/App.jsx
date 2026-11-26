@@ -234,6 +234,10 @@ export default function App() {
             koyuTema={koyuTema}
             onKoyuTemaDegistir={setKoyuTema}
             saglikVerisi={saglikVerisi}
+            kullanici={kullanici}
+            bulutDurumu={bulutDurumu}
+            onGoogleGiris={googleGirisYap}
+            onCikisYap={cikisYap}
             onSenkronize={() => setSaglikVerisi((prev) => saglikServisi.senkronizeEt(prev))}
             onProfilGuncelle={(profil) =>
               setSaglikVerisi((prev) => saglikServisi.profilGuncelle(prev, profil))
