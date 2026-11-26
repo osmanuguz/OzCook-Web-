@@ -12,6 +12,7 @@ import {
 import KaloriOneri from './KaloriOneri';
 import KykYurtModu from './KykYurtModu';
 import OzHealthTarifler from './OzHealthTarifler';
+import OzFitModu from './OzFitModu';
 
 function IlerlemeCubugu({ deger, hedef }) {
   const yuzde = Math.min(100, Math.round((deger / Math.max(1, hedef)) * 100));
@@ -235,41 +236,51 @@ export default function OzModlari({
 
       {/* OZFIT */}
       {seciliMod === 'OzFit' && (
-        <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/10 dark:border-red-500/20 p-5 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Footprints className="w-5 h-5 text-[#B71C1C] dark:text-red-400" />
-              <h3 className="font-semibold">OzFit Hareket & Adım</h3>
+        <div className="space-y-5">
+          <div className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-red-900/10 dark:border-red-500/20 p-5 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Footprints className="w-5 h-5 text-[#B71C1C] dark:text-red-400" />
+                <h3 className="font-semibold">OzFit Hareket & Adım</h3>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => onAdimEkle(500)}
+                  className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-medium hover:bg-red-900/10 cursor-pointer"
+                >
+                  +500
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onAdimEkle(1000)}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#B71C1C] text-white text-xs font-semibold cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>1.000 Adım</span>
+                </button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => onAdimEkle(500)}
-                className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-medium hover:bg-red-900/10 cursor-pointer"
-              >
-                +500
-              </button>
-              <button
-                type="button"
-                onClick={() => onAdimEkle(1000)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#B71C1C] text-white text-xs font-semibold cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>1.000 Adım</span>
-              </button>
-            </div>
+
+            <p className="text-2xl font-bold">
+              {saglikVerisi.adim.toLocaleString('tr-TR')}{' '}
+              <span className="text-sm font-normal text-zinc-500">
+                / {saglikVerisi.adimHedefi.toLocaleString('tr-TR')} adım
+              </span>
+            </p>
+            <IlerlemeCubugu deger={saglikVerisi.adim} hedef={saglikVerisi.adimHedefi} />
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Tahmini yakılan kalori: <strong>{saglikVerisi.yakilanKalori} kcal</strong>
+            </p>
           </div>
 
-          <p className="text-2xl font-bold">
-            {saglikVerisi.adim.toLocaleString('tr-TR')}{' '}
-            <span className="text-sm font-normal text-zinc-500">
-              / {saglikVerisi.adimHedefi.toLocaleString('tr-TR')} adım
-            </span>
-          </p>
-          <IlerlemeCubugu deger={saglikVerisi.adim} hedef={saglikVerisi.adimHedefi} />
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Tahmini yakılan kalori: <strong>{saglikVerisi.yakilanKalori} kcal</strong>
-          </p>
+          <OzFitModu
+            saglikVerisi={saglikVerisi}
+            kaydedilenler={kaydedilenler}
+            onFavoriDegistir={onFavoriDegistir}
+            onKaloriEkle={onKaloriEkle}
+            onHedefGuncelle={onHedefGuncelle}
+          />
         </div>
       )}
 
