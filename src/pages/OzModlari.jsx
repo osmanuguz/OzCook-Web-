@@ -10,6 +10,7 @@ import {
   Target,
 } from 'lucide-react';
 import KaloriOneri from './KaloriOneri';
+import KykYurtModu from './KykYurtModu';
 
 function IlerlemeCubugu({ deger, hedef }) {
   const yuzde = Math.min(100, Math.round((deger / Math.max(1, hedef)) * 100));
@@ -28,6 +29,8 @@ function IlerlemeCubugu({ deger, hedef }) {
 
 export default function OzModlari({
   saglikVerisi,
+  kaydedilenler = [],
+  onFavoriDegistir,
   onSuEkle,
   onAdimEkle,
   onKaloriEkle,
@@ -43,7 +46,7 @@ export default function OzModlari({
     adimHedefi: saglikVerisi.adimHedefi,
   });
 
-  const modlar = ['Kalori & OzDay', 'OzFit', 'OzHealth'];
+  const modlar = ['Kalori & OzDay', 'OzFit', 'OzHealth', 'KYK Yurt'];
 
   const kaloriGonder = (e) => {
     e.preventDefault();
@@ -64,7 +67,7 @@ export default function OzModlari({
     <div className="space-y-4">
       {/* Mod Seçici ve Hedef Butonu */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex-1 grid grid-cols-3 gap-2 p-1 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-red-900/10 dark:border-red-500/20">
+        <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-2 p-1 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-red-900/10 dark:border-red-500/20">
           {modlar.map((mod) => (
             <button
               key={mod}
@@ -305,6 +308,15 @@ export default function OzModlari({
 
           <IlerlemeCubugu deger={saglikVerisi.uykuSaat} hedef={8} />
         </div>
+      )}
+
+      {/* KYK YURT */}
+      {seciliMod === 'KYK Yurt' && (
+        <KykYurtModu
+          kaydedilenler={kaydedilenler}
+          onFavoriDegistir={onFavoriDegistir}
+          onKaloriEkle={onKaloriEkle}
+        />
       )}
     </div>
   );
