@@ -8,9 +8,11 @@ import {
   LogIn,
   LogOut,
   CloudCheck,
+  Sparkles,
 } from 'lucide-react';
 import AnaSayfa from './pages/AnaSayfa';
 import Dolap from './pages/Dolap';
+import AiPlanlayici from './pages/AiPlanlayici';
 import OzModlari from './pages/OzModlari';
 import Ayarlar from './pages/Ayarlar';
 import { saglikServisi } from './services/saglikServisi';
@@ -18,11 +20,20 @@ import { favoriServisi } from './services/favoriServisi';
 import { bulutServisi } from './services/bulutServisi';
 
 const TEMA_ANAHTARI = 'ozcook_koyu_tema';
+const PLAN_ANAHTARI = 'ozcook_haftalik_plan';
 
 export default function App() {
   const [aktifSekme, setAktifSekme] = useState('ana');
   const [saglikVerisi, setSaglikVerisi] = useState(() => saglikServisi.getir());
   const [kaydedilenler, setKaydedilenler] = useState(() => favoriServisi.getir());
+  const [haftalikPlan, setHaftalikPlan] = useState(() => {
+    try {
+      const kayitli = localStorage.getItem(PLAN_ANAHTARI);
+      return kayitli ? JSON.parse(kayitli) : null;
+    } catch {
+      return null;
+    }
+  });
   const [kullanici, setKullanici] = useState(null);
   const [bulutDurumu, setBulutDurumu] = useState('');
   const [koyuTema, setKoyuTema] = useState(() => {
@@ -63,6 +74,7 @@ export default function App() {
           bulutServisi.veriyiKaydet(kullanici.uid, {
             saglikVerisi,
             kaydedilenler,
+            haftalikPlan,
           });
           setBulutDurumu('Senkronize');
           return;
@@ -75,6 +87,14 @@ export default function App() {
         if (Array.isArray(veri.kaydedilenler)) {
           setKaydedilenler(veri.kaydedilenler);
           favoriServisi.kaydet(veri.kaydedilenler);
+        }
+        if (veri.haftalikPlan !== undefined) {
+          setHaftalikPlan(veri.haftalikPlan);
+          if (veri.haftalikPlan) {
+            localStorage.setItem(PLAN_ANAHTARI, JSON.stringify(veri.haftalikPlan));
+          } else {
+            localStorage.removeItem(PLAN_ANAHTARI);
+          }
         }
         setBulutDurumu('Senkronize');
       }
@@ -94,10 +114,11 @@ export default function App() {
       .veriyiKaydet(kullanici.uid, {
         saglikVerisi,
         kaydedilenler,
+        haftalikPlan,
       })
       .then(() => setBulutDurumu('Senkronize'))
       .catch(() => setBulutDurumu('Hata'));
-  }, [saglikVerisi, kaydedilenler, kullanici]);
+  }, [saglikVerisi, kaydedilenler, haftalikPlan, kullanici]);
 
   const googleGirisYap = async () => {
     try {
@@ -119,9 +140,19 @@ export default function App() {
     setKaydedilenler((prev) => favoriServisi.degistir(prev, tarif));
   };
 
+  const planGuncelle = (yeniPlan) => {
+    setHaftalikPlan(yeniPlan);
+    if (yeniPlan) {
+      localStorage.setItem(PLAN_ANAHTARI, JSON.stringify(yeniPlan));
+    } else {
+      localStorage.removeItem(PLAN_ANAHTARI);
+    }
+  };
+
   const basliklar = {
     ana: 'Ana Sayfa',
     dolap: 'Dolapta Ne Var?',
+    ai: 'AI Asistan & Plan',
     modlar: 'Oz Modları',
     ayarlar: 'Ayarlar',
   };
@@ -206,6 +237,14 @@ export default function App() {
 
         {aktifSekme === 'dolap' && <Dolap />}
 
+        {aktifSekme === 'ai' && (
+          <AiPlanlayici
+            saglikVerisi={saglikVerisi}
+            haftalikPlan={haftalikPlan}
+            onPlanGuncelle={planGuncelle}
+          />
+        )}
+
         {aktifSekme === 'modlar' && (
           <OzModlari
             saglikVerisi={saglikVerisi}
@@ -250,11 +289,11 @@ export default function App() {
       </main>
 
       <nav className="sticky bottom-0 z-20 bg-[#B71C1C] dark:bg-[#5E0D0D] text-white border-t border-white/10 dark:border-red-500/20">
-        <div className="max-w-5xl mx-auto px-4 h-16 grid grid-cols-4">
+        <div className="max-w-5xl mx-auto px-2 h-16 grid grid-cols-5">
           <button
             type="button"
             onClick={() => setAktifSekme('ana')}
-            className={`flex flex-col items-center justify-center gap-1 text-xs cursor-pointer ${
+            className={`flex flex-col items-center justify-center gap-1 text-[11px] cursor-pointer ${
               aktifSekme === 'ana' ? 'text-white font-semibold' : 'text-white/70'
             }`}
           >
@@ -265,7 +304,7 @@ export default function App() {
           <button
             type="button"
             onClick={() => setAktifSekme('dolap')}
-            className={`flex flex-col items-center justify-center gap-1 text-xs cursor-pointer ${
+            className={`flex flex-col items-center justify-center gap-1 text-[11px] cursor-pointer ${
               aktifSekme === 'dolap' ? 'text-white font-semibold' : 'text-white/70'
             }`}
           >
@@ -275,8 +314,19 @@ export default function App() {
 
           <button
             type="button"
+            onClick={() => setAktifSekme('ai')}
+            className={`flex flex-col items-center justify-center gap-1 text-[11px] cursor-pointer ${
+              aktifSekme === 'ai' ? 'text-white font-semibold' : 'text-white/70'
+            }`}
+          >
+            <Sparkles className="w-5 h-5" />
+            <span>AI Plan</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setAktifSekme('modlar')}
-            className={`flex flex-col items-center justify-center gap-1 text-xs cursor-pointer ${
+            className={`flex flex-col items-center justify-center gap-1 text-[11px] cursor-pointer ${
               aktifSekme === 'modlar' ? 'text-white font-semibold' : 'text-white/70'
             }`}
           >
@@ -287,7 +337,7 @@ export default function App() {
           <button
             type="button"
             onClick={() => setAktifSekme('ayarlar')}
-            className={`flex flex-col items-center justify-center gap-1 text-xs cursor-pointer ${
+            className={`flex flex-col items-center justify-center gap-1 text-[11px] cursor-pointer ${
               aktifSekme === 'ayarlar' ? 'text-white font-semibold' : 'text-white/70'
             }`}
           >
